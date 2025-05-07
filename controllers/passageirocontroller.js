@@ -71,8 +71,36 @@ module.exports = {
 
   async update(req, res) {
     try {
-      const atualizado = await Passageiro.findByIdAndUpdate(req.params.id, req.body, { new: true });
-      if (!atualizado) return res.status(404).json({ erro: 'Passageiro não encontrado' });
+      const { nome, cpf, statusCheckin } = req.body;
+  
+      // Busca passageiro e já popula o voo
+      const passageiroExistente = await Passageiro.findById(req.params.id).populate('vooId');
+      if (!passageiroExistente) {
+        return res.status(404).json({ erro: 'Passageiro não encontrado' });
+      }
+  
+      const statusVoo = passageiroExistente.vooId.status;
+  
+      // Verifica se a tentativa é de alterar para REALIZADO
+      if (statusCheckin === 'realizado') {
+        if (statusVoo !== 'embarque') {
+          return res.status(400).json({
+            erro: `Não é possível fazer check-in. O status do voo atual é "${statusVoo}" e precisa estar como "embarque".`
+          });
+        }
+      }
+  
+      // Atualiza o passageiro com o novo nome/cpf/statusCheckin
+      const atualizado = await Passageiro.findByIdAndUpdate(
+        req.params.id,
+        {
+          nome,
+          cpf,
+          statusCheckin: statusCheckin || passageiroExistente.statusCheckin
+        },
+        { new: true }
+      ).populate('vooId');
+  
       res.json(atualizado);
     } catch (err) {
       res.status(400).json({ erro: err.message });
