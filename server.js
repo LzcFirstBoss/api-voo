@@ -15,11 +15,13 @@ mongoose.connect(process.env.MONGO_URI, {
 const rotasPassageiro = require('./routes/passageiroroutes');
 const rotasVoo = require('./routes/vooroute');
 const rotasPortao = require('./routes/portaoroutes');
+const funcionarioRoutes = require('./routes/funcionarioroutes');
 
 // Usa rotas
 app.use('/passageiros', rotasPassageiro);
 app.use('/voos', rotasVoo);
 app.use('/portoes', rotasPortao);
+app.use('/funcionarios', funcionarioRoutes);
 
 app.get('/', (req, res) => {
   res.send('API do Aeroporto no ar!');
